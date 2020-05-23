@@ -1,0 +1,46 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+
+env:
+  DOCKER_BUILDKIT: 1
+  #BUILDKIT_HOST: kube-pod://buildkitd:1234
+  BUILDKIT_HOST: tcp://buildkitd:1234
+  REGISTORY: docker.io
+  REGISTORY_USER: ornew
+  REGISTORY_REPOSITORY: github-actions-runner
+  REGISTORY_SECRET: ${{ secrets.REGISTORY_SECRET }}
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image
+        run: |
+          IMAGE_URL=$REGISTORY/$REGISTORY_USER/$REGISTORY_REPOSITORY
+          echo DOCKER_IMAGE=$IMAGE_URL
+          make DOCKER_IMAGE=$IMAGE_URL image
+  push:
+    needs: build
+    runs-on: self-hosted
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Log into registry
+        run: echo "$REGISTORY_SECRET" | docker login $REGISTORY -u $REGISTORY_USER --password-stdin
+      - name: Build and Push image
+        run: |
+          IMAGE_URL=$REGISTORY/$REGISTORY_USER/$REGISTORY_REPOSITORY
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          [ "$VERSION" == "master" ] && VERSION=latest
+          echo DOCKER_IMAGE=$IMAGE_URL
+          echo VERSION=$VERSION
+          make DOCKER_IMAGE=$IMAGE_URL:$VERSION image/push
