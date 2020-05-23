@@ -67,4 +67,11 @@ install_github_actions_runner() {
 install_buildkit
 install_github_actions_runner
 
+/opt/github-actions-runner/bin/installdependencies.sh
+
 mkdir -p /work
+
+groupadd -r github-actions-runner
+useradd -g github-actions-runner -r github-actions-runner -s /sbin/nologin
+chown -R github-actions-runner:github-actions-runner /work
+chown -R github-actions-runner:github-actions-runner /opt/github-actions-runner

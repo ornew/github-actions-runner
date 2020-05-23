@@ -1,8 +1,8 @@
 # syntax = docker/dockerfile:experimental
-ARG UBUNTU_IMAGE_VERSION=20.04
+ARG UBUNTU_IMAGE_VERSION=18.04
 FROM ubuntu:$UBUNTU_IMAGE_VERSION
 
-ARG UBUNTU_CODENAME=focal
+ARG UBUNTU_CODENAME=bionic
 ARG APT_ARCHIVE_REPOSITORY_URL=http://archive.ubuntu.com
 ARG INSTALL_PREFIX=/opt
 
@@ -18,5 +18,6 @@ RUN \
 COPY entrypoint.sh /entrypoint.sh
 
 WORKDIR /work
+USER github-actions-runner
 
 ENTRYPOINT ["/entrypoint.sh"]
