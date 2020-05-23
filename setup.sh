@@ -1,6 +1,7 @@
 #!/bin/sh
 
 BUILDKIT_URL=https://github.com/moby/buildkit/releases/download/v0.7.1/buildkit-v0.7.1.linux-amd64.tar.gz
+DOCKER_URL=https://download.docker.com/linux/static/stable/x86_64/docker-rootless-extras-19.03.9.tgz
 RUNNER_URL=https://github.com/actions/runner/releases/download/v2.262.1/actions-runner-linux-x64-2.262.1.tar.gz
 
 tee /etc/apt/sources.list <<EOF
@@ -53,6 +54,12 @@ setup() {
   esac
 }
 
+install_docker() {
+  setup docker $DOCKER_URL targz
+  cp $apptmp/docker/docker $app
+  ln -svf $app/docker $bin/docker
+}
+
 install_buildkit() {
   setup buildkit $BUILDKIT_URL targz
   cp $apptmp/bin/buildctl $app
@@ -64,6 +71,7 @@ install_github_actions_runner() {
   cp -rT $apptmp $app
 }
 
+install_docker
 install_buildkit
 install_github_actions_runner
 
@@ -72,6 +80,6 @@ install_github_actions_runner
 mkdir -p /work
 
 groupadd -r github-actions-runner
-useradd -g github-actions-runner -r github-actions-runner -s /sbin/nologin
+useradd -g github-actions-runner -r github-actions-runner -s /sbin/nologin -m
 chown -R github-actions-runner:github-actions-runner /work
 chown -R github-actions-runner:github-actions-runner /opt/github-actions-runner
