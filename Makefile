@@ -1,3 +1,4 @@
+VERSION   ?= latest
 IMAGE_URL ?= docker.io/ornew/github-actions-runner
 
 BUILDKIT_HOST  ?= tcp://127.0.0.1:1234
@@ -19,7 +20,7 @@ BUILDKIT_CERTS ?=
 		--opt source=docker/dockerfile \
 		--local context=. \
 		--local dockerfile=. \
-		--output type=docker,name=$(IMAGE_URL),dest=$@
+		--output type=docker,name=$(IMAGE_URL):$(VERSION),dest=$@
 
 image: .cache/image
 
@@ -34,4 +35,4 @@ image/push: setup.sh entrypoint.sh Dockerfile
 		--opt source=docker/dockerfile \
 		--local context=. \
 		--local dockerfile=. \
-		--output type=image,name=$(IMAGE_URL),push=true
+		--output type=image,name=$(IMAGE_URL):$(VERSION),push=true
